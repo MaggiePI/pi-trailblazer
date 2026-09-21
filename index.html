@@ -1,0 +1,738 @@
+<title>Pi Trailblazer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Space+Mono:wght@400;700&family=Karla:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    color-scheme: light;
+    --bg: #F5F1E4;
+    --bg-2: #ECE4D0;
+    --paper-line: #CBBE9C;
+    --ink: #26311F;
+    --ink-soft: #66715A;
+    --surface: #FFFDF6;
+    --surface-2: #FBF6E8;
+    --accent: #D9642A;
+    --accent-ink: #FFFFFF;
+    --accent-2: #3F6B49;
+    --gold: #B07F26;
+    --danger: #B23F2D;
+    --shadow: rgba(38,49,31,0.14);
+    --focus: #2E5FA3;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg: #141A14;
+      --bg-2: #1B231A;
+      --paper-line: #3A452F;
+      --ink: #ECE7D4;
+      --ink-soft: #9FAE8E;
+      --surface: #1E2620;
+      --surface-2: #232C24;
+      --accent: #F0824A;
+      --accent-ink: #1B120A;
+      --accent-2: #74B682;
+      --gold: #E1B45A;
+      --danger: #E37A5F;
+      --shadow: rgba(0,0,0,0.45);
+      --focus: #7FB0E8;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg: #141A14;
+    --bg-2: #1B231A;
+    --paper-line: #3A452F;
+    --ink: #ECE7D4;
+    --ink-soft: #9FAE8E;
+    --surface: #1E2620;
+    --surface-2: #232C24;
+    --accent: #F0824A;
+    --accent-ink: #1B120A;
+    --accent-2: #74B682;
+    --gold: #E1B45A;
+    --danger: #E37A5F;
+    --shadow: rgba(0,0,0,0.45);
+    --focus: #7FB0E8;
+  }
+
+  *{ box-sizing: border-box; }
+  body{
+    background:
+      radial-gradient(ellipse 60% 40% at 15% 8%, color-mix(in srgb, var(--accent-2) 8%, transparent), transparent),
+      radial-gradient(ellipse 50% 35% at 90% 85%, color-mix(in srgb, var(--gold) 10%, transparent), transparent),
+      var(--bg);
+    color: var(--ink);
+    font-family: 'Karla', ui-sans-serif, system-ui, sans-serif;
+    padding-inline: 16px;
+    padding-block: 22px 40px;
+  }
+  h1,h2,h3{ font-family: 'Fraunces', ui-serif, Georgia, serif; margin: 0; text-wrap: balance; }
+  button{ font-family: inherit; }
+  .app{ max-width: 560px; margin: 0 auto; display:flex; flex-direction:column; gap: 18px; }
+
+  /* ---------- header ---------- */
+  .masthead{
+    display:flex; flex-direction:column; gap:4px;
+    border-bottom: 1px dashed var(--paper-line);
+    padding-bottom: 14px;
+  }
+  .eyebrow{
+    font-family:'Space Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--accent-2); font-weight:700;
+  }
+  .masthead h1{ font-size: clamp(28px, 6vw, 38px); font-weight: 600; color: var(--ink); }
+  .masthead p{ margin: 2px 0 0; color: var(--ink-soft); font-size: 14.5px; max-width: 46ch; }
+
+  /* ---------- mode toggle ---------- */
+  .mode-row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .mode-toggle{
+    display:inline-flex; background: var(--surface-2); border: 1px solid var(--paper-line);
+    border-radius: 999px; padding: 3px; gap: 2px;
+  }
+  .mode-toggle button{
+    border:0; background:transparent; color: var(--ink-soft); font-weight:700; font-size: 13px;
+    padding: 7px 15px; border-radius:999px; cursor:pointer; transition: background .18s, color .18s;
+  }
+  .mode-toggle button.active{ background: var(--accent); color: var(--accent-ink); }
+  .mode-toggle button:focus-visible{ outline: 2px solid var(--focus); outline-offset:2px; }
+  .mode-hint{ font-size: 12.5px; color: var(--ink-soft); font-style: italic; }
+
+  /* ---------- stats ---------- */
+  .stats{ display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; }
+  .stat{
+    background: var(--surface); border:1px solid var(--paper-line); border-radius: 14px;
+    padding: 10px 8px; display:flex; flex-direction:column; gap:2px; min-width: 0;
+    box-shadow: 0 1px 0 var(--shadow);
+  }
+  .stat .label{ font-size: 10px; letter-spacing:.08em; text-transform:uppercase; color: var(--ink-soft); font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .stat .value{
+    font-family:'Space Mono', monospace; font-variant-numeric: tabular-nums;
+    font-size: clamp(12px, 4vw, 17px); font-weight:700; color: var(--ink);
+    white-space: nowrap;
+  }
+  .stat.best{ border-color: color-mix(in srgb, var(--gold) 55%, var(--paper-line)); }
+  .stat.best .value{ color: var(--gold); }
+
+  /* ---------- trail ---------- */
+  .trail-card{
+    background: var(--surface); border:1px solid var(--paper-line); border-radius: 20px;
+    padding: 12px; box-shadow: 0 2px 0 var(--shadow); position:relative;
+  }
+  .trail-card .trail-title{
+    display:flex; justify-content:space-between; align-items:baseline; padding: 0 4px 8px;
+  }
+  .trail-card .trail-title h2{ font-size: 15px; font-weight:600; }
+  .trail-card .trail-title span{ font-family:'Space Mono',monospace; font-size:11.5px; color: var(--ink-soft); }
+  .trail-viewport{
+    height: 420px; overflow-y: auto; overflow-x: hidden; border-radius: 14px;
+    background: var(--surface-2); position: relative;
+    background-image: repeating-linear-gradient(0deg, transparent 0 33px, color-mix(in srgb, var(--paper-line) 45%, transparent) 33px 34px);
+  }
+  @media (max-width: 420px){ .trail-viewport{ height: 340px; } }
+  .trail-viewport svg{ width:100%; display:block; aspect-ratio: 320 / 3440; }
+  .trail-viewport::-webkit-scrollbar{ width: 8px; }
+  .trail-viewport::-webkit-scrollbar-thumb{ background: var(--paper-line); border-radius: 8px; }
+
+  .restart-row{ display:flex; justify-content:flex-end; padding-top: 8px; }
+  .btn-ghost{
+    background:transparent; border: 1px solid var(--paper-line); color: var(--ink-soft);
+    font-size: 12.5px; font-weight:700; padding: 6px 12px; border-radius: 999px; cursor:pointer;
+  }
+  .btn-ghost:hover{ color: var(--ink); border-color: var(--ink-soft); }
+  .btn-ghost:focus-visible{ outline: 2px solid var(--focus); outline-offset:2px; }
+
+  /* ---------- console (readout + keypad) ---------- */
+  .console{
+    background: var(--surface); border:1px solid var(--paper-line); border-radius: 20px;
+    padding: 16px; box-shadow: 0 2px 0 var(--shadow); display:flex; flex-direction:column; gap: 14px;
+  }
+  .readout{
+    font-family:'Space Mono', monospace; font-size: clamp(18px, 4.6vw, 23px);
+    line-height: 1.5; letter-spacing: 0.02em; word-break: break-all;
+    background: var(--surface-2); border: 1px solid var(--paper-line); border-radius: 12px;
+    padding: 14px 14px; min-height: 5.4em; overflow-wrap: anywhere;
+  }
+  .readout.shake{ animation: shake .38s ease; }
+  .int-part{ color: var(--ink-soft); }
+  .d{ display:inline-block; color: var(--ink); }
+  .d.grp{ margin-right: 0.3em; }
+  .d.flash-good{ animation: pop .32s ease; color: var(--accent-2); }
+  .ghost-d{ opacity: .34; color: var(--ink-soft); }
+  .cursor{
+    display:inline-block; width: 2px; height: 1em; background: var(--accent);
+    vertical-align: -0.15em; margin-inline: 1px; animation: blink 1s step-end infinite;
+  }
+  @media (prefers-reduced-motion: reduce){ .cursor{ animation: none; opacity:.7; } }
+
+  .hint-toast{
+    font-family:'Space Mono', monospace; font-size: 13px; color: var(--gold);
+    background: color-mix(in srgb, var(--gold) 14%, var(--surface-2));
+    border: 1px solid color-mix(in srgb, var(--gold) 45%, var(--paper-line));
+    border-radius: 10px; padding: 6px 10px; display:none; align-items:center; gap:6px;
+  }
+  .hint-toast.show{ display:flex; }
+
+  .keypad{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .key{
+    font-family:'Space Mono', monospace; font-size: 20px; font-weight:700; color: var(--ink);
+    background: var(--surface-2); border: 1px solid var(--paper-line); border-radius: 12px;
+    padding: 14px 0; cursor:pointer; transition: transform .08s ease, background .12s ease;
+  }
+  .key:active{ transform: scale(0.94); }
+  .key:hover{ background: color-mix(in srgb, var(--accent) 10%, var(--surface-2)); }
+  .key:focus-visible{ outline: 2px solid var(--focus); outline-offset:2px; }
+  .key.good{ background: var(--accent-2); color: #fff; border-color: var(--accent-2); }
+  .key.bad{ background: var(--danger); color: #fff; border-color: var(--danger); }
+  .key.util{ font-family:'Karla', sans-serif; font-size: 12.5px; color: var(--ink-soft); background: transparent; }
+  .key.util:hover{ background: var(--surface-2); }
+
+  /* ---------- celebration ---------- */
+  .celebrate{
+    border: 1px solid color-mix(in srgb, var(--gold) 50%, var(--paper-line));
+    background: color-mix(in srgb, var(--gold) 10%, var(--surface));
+    border-radius: 18px; padding: 18px; display:flex; flex-direction:column; align-items:flex-start; gap:8px;
+    box-shadow: 0 2px 0 var(--shadow);
+  }
+  .celebrate[hidden]{ display: none; }
+  .celebrate .flag{ width:34px; height:34px; }
+  .celebrate h3{ font-size: 20px; color: var(--gold); }
+  .celebrate p{ margin:0; color: var(--ink-soft); font-size: 14px; }
+  .btn-primary{
+    background: var(--accent); color: var(--accent-ink); border: 0; font-weight:700;
+    padding: 10px 18px; border-radius: 999px; cursor:pointer; font-size: 14px;
+  }
+  .btn-primary:focus-visible{ outline: 2px solid var(--focus); outline-offset:2px; }
+
+  footer{ text-align:center; color: var(--ink-soft); font-size: 12px; padding-top: 4px; }
+  footer p{ margin: 2px 0; }
+
+  .confetti-piece{
+    position: fixed; top: -20px; width: 8px; height: 14px; border-radius: 2px; pointer-events:none; z-index: 999;
+    animation: fall linear forwards;
+  }
+
+  @keyframes blink{ 0%,49%{ opacity:1; } 50%,100%{ opacity:0; } }
+  @keyframes shake{ 0%,100%{ transform: translateX(0); } 20%{ transform: translateX(-6px); } 40%{ transform: translateX(5px); } 60%{ transform: translateX(-4px); } 80%{ transform: translateX(3px); } }
+  @keyframes pop{ 0%{ transform: scale(1.6); } 100%{ transform: scale(1); } }
+  @keyframes fall{ to{ transform: translateY(110vh) rotate(340deg); opacity: 0.2; } }
+  @media (prefers-reduced-motion: reduce){
+    .readout.shake{ animation: none; }
+    .d.flash-good{ animation: none; }
+  }
+</style>
+
+<div class="app">
+  <div class="masthead">
+    <span class="eyebrow">Memory trail · first 100 decimals</span>
+    <h1>Pi Trailblazer</h1>
+    <p>Type the digits of π from memory, one at a time, and watch your trail climb toward the summit at digit 100.</p>
+  </div>
+
+  <div class="mode-row">
+    <div class="mode-toggle" role="group" aria-label="Practice mode">
+      <button id="modeLearn" class="active" aria-pressed="true">Learn</button>
+      <button id="modeRecall" aria-pressed="false">Recall</button>
+    </div>
+    <span class="mode-hint" id="modeHint">Digits stay visible — walk the path while it's in view.</span>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <span class="label" id="progressLabel">Reviewed</span>
+      <span class="value" id="statProgress">0 / 100</span>
+    </div>
+    <div class="stat best">
+      <span class="label">Best run</span>
+      <span class="value" id="statBest">0</span>
+    </div>
+    <div class="stat">
+      <span class="label" id="timeLabel">Best time</span>
+      <span class="value" id="statTime">—:—</span>
+    </div>
+  </div>
+
+  <div class="trail-card">
+    <div class="trail-title">
+      <h2>The trail</h2>
+      <span id="trailLegend">green = your record · orange = this walk</span>
+    </div>
+    <div class="trail-viewport" id="trailViewport">
+      <svg id="trailSvg" viewBox="0 0 320 3440" preserveAspectRatio="xMidYMin meet" aria-label="Winding trail marking your progress through 100 digits of pi"></svg>
+    </div>
+    <div class="restart-row">
+      <button class="btn-ghost" id="restartBtn" type="button">Restart this walk</button>
+    </div>
+  </div>
+
+  <div class="celebrate" id="celebrate" hidden>
+    <svg class="flag" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5 21V4" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"/>
+      <path d="M5 4h13l-3.2 4L18 12H5" fill="var(--gold)" stroke="var(--gold)" stroke-width="1.4" stroke-linejoin="round"/>
+    </svg>
+    <h3>Summit reached — all 100 digits</h3>
+    <p id="celebrateDetail">You made it to the top of the trail.</p>
+    <button class="btn-primary" id="celebrateClose" type="button">Blaze it again</button>
+  </div>
+
+  <div class="console">
+    <div class="readout" id="readout" role="status" aria-live="polite">
+      <span class="int-part">3.</span><span id="typed"></span><span class="cursor" id="cursor" aria-hidden="true"></span><span id="ghost"></span>
+    </div>
+    <div class="hint-toast" id="hintToast"></div>
+    <div class="keypad" id="keypad">
+      <button class="key" data-digit="1" type="button">1</button>
+      <button class="key" data-digit="2" type="button">2</button>
+      <button class="key" data-digit="3" type="button">3</button>
+      <button class="key" data-digit="4" type="button">4</button>
+      <button class="key" data-digit="5" type="button">5</button>
+      <button class="key" data-digit="6" type="button">6</button>
+      <button class="key" data-digit="7" type="button">7</button>
+      <button class="key" data-digit="8" type="button">8</button>
+      <button class="key" data-digit="9" type="button">9</button>
+      <button class="key util" id="hintBtn" type="button">Hint</button>
+      <button class="key" data-digit="0" type="button">0</button>
+      <span></span>
+    </div>
+  </div>
+
+  <footer>
+    <p id="completionNote"></p>
+    <p>Your best distance and time are kept on this device only.</p>
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var PI_DIGITS = "1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679";
+  var TOTAL = PI_DIGITS.length; // 100
+  var STORAGE_KEY = "pi-trailblazer-v1";
+  var W = 320, ROW_H = 34, TOP_PAD = 22, BOTTOM_PAD = 70;
+  var H = TOP_PAD + (TOTAL - 1) * ROW_H + BOTTOM_PAD;
+
+  var reduceMotion = false;
+  try{ reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){}
+
+  function loadStore(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return { best: 0, bestTimeMs: null, completions: 0 };
+      var parsed = JSON.parse(raw);
+      return {
+        best: typeof parsed.best === 'number' ? parsed.best : 0,
+        bestTimeMs: typeof parsed.bestTimeMs === 'number' ? parsed.bestTimeMs : null,
+        completions: typeof parsed.completions === 'number' ? parsed.completions : 0
+      };
+    }catch(e){ return { best: 0, bestTimeMs: null, completions: 0 }; }
+  }
+  function saveStore(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); }catch(e){}
+  }
+
+  var store = loadStore();
+  var mode = 'learn';
+  var current = 0;
+  var hinted = false;
+  var runStartTime = null;
+  var timerHandle = null;
+
+  // ----- geometry -----
+  var points = [];
+  for(var i=0;i<TOTAL;i++){
+    var x = W/2 + 92 * Math.sin(i * 0.55);
+    var y = TOP_PAD + i * ROW_H;
+    points.push({ x: x, y: y, checkpoint: (i+1) % 10 === 0 });
+  }
+
+  function pathD(list){
+    if(list.length < 2) return "";
+    var d = "M " + list[0].x.toFixed(1) + " " + list[0].y.toFixed(1);
+    for(var i=1;i<list.length;i++){
+      d += " L " + list[i].x.toFixed(1) + " " + list[i].y.toFixed(1);
+    }
+    return d;
+  }
+
+  var svgNS = "http://www.w3.org/2000/svg";
+  function svgEl(tag, attrs){
+    var el = document.createElementNS(svgNS, tag);
+    for(var k in attrs){ el.setAttribute(k, attrs[k]); }
+    return el;
+  }
+
+  var svg = document.getElementById('trailSvg');
+  var basePath, recordPath, currentPath, marker, markerAnimTarget, recordRing, nodesGroup;
+
+  function buildTrail(){
+    svg.innerHTML = '';
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+
+    basePath = svgEl('path', { d: pathD(points), fill:'none', stroke:'var(--paper-line)', 'stroke-width':'9', 'stroke-linecap':'round', 'stroke-dasharray':'1 11', opacity:'0.9' });
+    svg.appendChild(basePath);
+
+    recordPath = svgEl('path', { fill:'none', stroke:'var(--accent-2)', 'stroke-width':'7', 'stroke-linecap':'round', 'stroke-linejoin':'round', opacity:'0.55' });
+    svg.appendChild(recordPath);
+
+    currentPath = svgEl('path', { fill:'none', stroke:'var(--accent)', 'stroke-width':'7', 'stroke-linecap':'round', 'stroke-linejoin':'round' });
+    svg.appendChild(currentPath);
+
+    nodesGroup = svgEl('g', {});
+    svg.appendChild(nodesGroup);
+
+    points.forEach(function(p, idx){
+      if(p.checkpoint){
+        var mile = (idx + 1) / 10;
+        var label = (idx === TOTAL - 1) ? 'SUMMIT' : ('MILE ' + mile);
+        var onRight = p.x < W/2;
+        var lx = onRight ? p.x + 16 : p.x - 16;
+        var text = svgEl('text', {
+          x: lx.toFixed(1), y: (p.y + 3.2).toFixed(1),
+          'font-family': "'Space Mono', monospace", 'font-size': '8.6',
+          fill: (idx === TOTAL - 1) ? 'var(--gold)' : 'var(--ink-soft)',
+          'font-weight': (idx === TOTAL - 1) ? '700' : '400',
+          'text-anchor': onRight ? 'start' : 'end',
+          'letter-spacing': '0.06em'
+        });
+        text.textContent = label;
+        nodesGroup.appendChild(text);
+      }
+      var c = svgEl('circle', {
+        cx: p.x.toFixed(1), cy: p.y.toFixed(1), r: p.checkpoint ? 8 : 4.6,
+        fill: 'var(--surface)', stroke: 'var(--paper-line)', 'stroke-width': p.checkpoint ? 2.2 : 1.4
+      });
+      c.setAttribute('data-idx', idx);
+      nodesGroup.appendChild(c);
+    });
+
+    recordRing = svgEl('circle', { r: '10.5', fill:'none', stroke:'var(--gold)', 'stroke-width':'2', 'stroke-dasharray':'2 3', visibility:'hidden' });
+    svg.appendChild(recordRing);
+
+    marker = svgEl('g', {});
+    var markerInner = svgEl('g', {});
+    var mHalo = svgEl('circle', { r: '13', fill: 'color-mix(in srgb, var(--accent) 25%, transparent)' });
+    var mDot = svgEl('circle', { r: '7', fill: 'var(--accent)', stroke: 'var(--surface)', 'stroke-width': '2' });
+    markerInner.appendChild(mHalo);
+    markerInner.appendChild(mDot);
+    marker.appendChild(markerInner);
+    svg.appendChild(marker);
+    markerAnimTarget = markerInner;
+  }
+
+  function nodeColor(idx){
+    if(idx < current) return 'var(--accent)';
+    if(idx < store.best) return 'color-mix(in srgb, var(--accent-2) 55%, var(--surface))';
+    return 'var(--surface)';
+  }
+  function nodeStroke(idx){
+    if(idx < current) return 'var(--accent)';
+    if(idx < store.best) return 'var(--accent-2)';
+    return 'var(--paper-line)';
+  }
+
+  function renderTrail(){
+    currentPath.setAttribute('d', pathD(points.slice(0, Math.max(current,0)) ));
+    recordPath.setAttribute('d', pathD(points.slice(0, Math.max(store.best,0)) ));
+
+    var circles = nodesGroup.querySelectorAll('circle');
+    circles.forEach(function(c){
+      var idx = parseInt(c.getAttribute('data-idx'), 10);
+      c.setAttribute('fill', nodeColor(idx));
+      c.setAttribute('stroke', nodeStroke(idx));
+    });
+
+    if(store.best > 0){
+      var rp = points[Math.min(store.best,TOTAL) - 1];
+      recordRing.setAttribute('cx', rp.x.toFixed(1));
+      recordRing.setAttribute('cy', rp.y.toFixed(1));
+      recordRing.setAttribute('visibility', 'visible');
+    } else {
+      recordRing.setAttribute('visibility', 'hidden');
+    }
+
+    var mp = points[Math.min(current, TOTAL - 1)];
+    marker.setAttribute('transform', 'translate(' + mp.x.toFixed(1) + ',' + mp.y.toFixed(1) + ')');
+    if(markerAnimTarget && !reduceMotion){
+      markerAnimTarget.style.animation = 'none';
+      // force reflow so the animation restarts on every move
+      void markerAnimTarget.getBBox();
+      markerAnimTarget.style.animation = 'pop .3s ease';
+    }
+  }
+
+  function scrollToCurrent(){
+    var viewport = document.getElementById('trailViewport');
+    var rect = svg.getBoundingClientRect();
+    if(rect.height === 0) return;
+    var scaleY = rect.height / H;
+    var idx = Math.min(current, TOTAL - 1);
+    var targetY = points[idx].y * scaleY;
+    var top = Math.max(0, targetY - viewport.clientHeight / 2);
+    viewport.scrollTo({ top: top, behavior: reduceMotion ? 'auto' : 'smooth' });
+  }
+
+  // ----- readout -----
+  function renderReadout(){
+    var typedEl = document.getElementById('typed');
+    var ghostEl = document.getElementById('ghost');
+    typedEl.innerHTML = '';
+    for(var i=0;i<current;i++){
+      var s = document.createElement('span');
+      s.className = 'd' + (((i+1) % 2 === 0) ? ' grp' : '');
+      s.textContent = PI_DIGITS[i];
+      typedEl.appendChild(s);
+    }
+    ghostEl.innerHTML = '';
+    if(mode === 'learn'){
+      for(var j=current;j<TOTAL;j++){
+        var g = document.createElement('span');
+        g.className = 'd ghost-d' + (((j+1) % 2 === 0) ? ' grp' : '');
+        g.textContent = PI_DIGITS[j];
+        ghostEl.appendChild(g);
+      }
+    }
+  }
+
+  function flashLastGood(){
+    var typedEl = document.getElementById('typed');
+    var last = typedEl.lastElementChild;
+    if(last){ last.classList.add('flash-good'); setTimeout(function(){ last.classList.remove('flash-good'); }, 340); }
+  }
+  function flashWrong(){
+    var readout = document.getElementById('readout');
+    if(!reduceMotion){ readout.classList.add('shake'); setTimeout(function(){ readout.classList.remove('shake'); }, 400); }
+  }
+  function flashKey(digit, good){
+    var btn = document.querySelector('.key[data-digit="' + digit + '"]');
+    if(!btn) return;
+    btn.classList.add(good ? 'good' : 'bad');
+    setTimeout(function(){ btn.classList.remove(good ? 'good' : 'bad'); }, 260);
+  }
+
+  // ----- stats & timer -----
+  function formatTime(ms){
+    if(ms == null) return '—:—';
+    var totalSec = ms / 1000;
+    var m = Math.floor(totalSec / 60);
+    var s = totalSec - m * 60;
+    return m + ':' + (s < 10 ? '0' : '') + s.toFixed(1);
+  }
+
+  function updateStats(){
+    document.getElementById('statProgress').textContent = current + '/' + TOTAL;
+    document.getElementById('progressLabel').textContent = mode === 'recall' ? 'Recalled' : 'Reviewed';
+    document.getElementById('statBest').textContent = store.best;
+
+    var timeEl = document.getElementById('statTime');
+    if(mode === 'recall' && runStartTime !== null){
+      timeEl.textContent = formatTime(performance.now() - runStartTime);
+      document.getElementById('timeLabel').textContent = 'This walk';
+    } else {
+      timeEl.textContent = formatTime(store.bestTimeMs);
+      document.getElementById('timeLabel').textContent = 'Best time';
+    }
+
+    var note = document.getElementById('completionNote');
+    note.textContent = store.completions > 0
+      ? ("You've reached the summit " + store.completions + (store.completions === 1 ? ' time.' : ' times.'))
+      : '';
+  }
+
+  function startTimerLoop(){
+    stopTimerLoop();
+    timerHandle = setInterval(updateStats, 100);
+  }
+  function stopTimerLoop(){
+    if(timerHandle){ clearInterval(timerHandle); timerHandle = null; }
+  }
+
+  // ----- celebration -----
+  function spawnConfetti(){
+    if(reduceMotion) return;
+    var colors = ['#D9642A', '#3F6B49', '#B07F26', '#B23F2D'];
+    for(var i=0;i<28;i++){
+      var piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      piece.style.left = (Math.random() * 100) + 'vw';
+      piece.style.background = colors[i % colors.length];
+      piece.style.animationDuration = (1.4 + Math.random() * 0.9) + 's';
+      piece.style.transform = 'rotate(' + (Math.random() * 360) + 'deg)';
+      document.body.appendChild(piece);
+      (function(el){ setTimeout(function(){ el.remove(); }, 2500); })(piece);
+    }
+  }
+
+  function celebrate(elapsedMs, isNewBestTime){
+    var panel = document.getElementById('celebrate');
+    var detail = document.getElementById('celebrateDetail');
+    if(mode === 'recall'){
+      detail.textContent = "Time: " + formatTime(elapsedMs) + (isNewBestTime ? " — a new best." : (hinted ? " (hint used, not counted toward best time)." : "."));
+    } else {
+      detail.textContent = "You've walked all 100 digits in Learn mode.";
+    }
+    panel.hidden = false;
+    spawnConfetti();
+  }
+
+  // ----- run control -----
+  function resetRun(){
+    stopTimerLoop();
+    current = 0;
+    hinted = false;
+    runStartTime = null;
+    document.getElementById('celebrate').hidden = true;
+    hideHint();
+    renderReadout();
+    renderTrail();
+    updateStats();
+    scrollToCurrent();
+  }
+
+  function handleDigit(digit){
+    var expected = PI_DIGITS[current];
+    if(digit === expected){
+      current++;
+      flashKey(digit, true);
+      if(mode === 'recall' && current === 1){
+        runStartTime = performance.now();
+        startTimerLoop();
+      }
+      if(current > store.best){
+        store.best = current;
+        saveStore();
+      }
+      renderReadout();
+      flashLastGood();
+      renderTrail();
+      updateStats();
+      scrollToCurrent();
+
+      if(current === TOTAL){
+        var elapsed = runStartTime !== null ? (performance.now() - runStartTime) : null;
+        stopTimerLoop();
+        var isNewBest = false;
+        if(mode === 'recall' && !hinted && elapsed !== null){
+          if(store.bestTimeMs === null || elapsed < store.bestTimeMs){
+            store.bestTimeMs = elapsed;
+            isNewBest = true;
+          }
+        }
+        store.completions++;
+        saveStore();
+        updateStats();
+        celebrate(elapsed, isNewBest);
+      }
+    } else {
+      flashKey(digit, false);
+      flashWrong();
+      if(mode === 'recall'){
+        showHint("It was " + expected + " — walk restarts.", 900);
+        setTimeout(resetRun, 700);
+      }
+      // Learn mode: mistakes don't reset the walk, just try again.
+    }
+  }
+
+  var hintTimeout = null;
+  function showHint(text, ms){
+    var el = document.getElementById('hintToast');
+    el.textContent = text;
+    el.classList.add('show');
+    clearTimeout(hintTimeout);
+    hintTimeout = setTimeout(hideHint, ms || 1500);
+  }
+  function hideHint(){
+    var el = document.getElementById('hintToast');
+    el.classList.remove('show');
+    el.textContent = '';
+  }
+
+  function useHint(){
+    if(current >= TOTAL) return;
+    hinted = true;
+    showHint("Next digit: " + PI_DIGITS[current], 1500);
+  }
+
+  // ----- mode switching -----
+  function setMode(next){
+    if(mode === next) return;
+    mode = next;
+    document.getElementById('modeLearn').classList.toggle('active', mode === 'learn');
+    document.getElementById('modeLearn').setAttribute('aria-pressed', mode === 'learn');
+    document.getElementById('modeRecall').classList.toggle('active', mode === 'recall');
+    document.getElementById('modeRecall').setAttribute('aria-pressed', mode === 'recall');
+    document.getElementById('modeHint').textContent = mode === 'learn'
+      ? "Digits stay visible — walk the path while it's in view."
+      : "Digits are hidden — recall each one before you type it.";
+    document.getElementById('hintBtn').style.visibility = mode === 'recall' ? 'visible' : 'hidden';
+    resetRun();
+  }
+
+  function buildKeypad(){
+    var keys = document.querySelectorAll('.key[data-digit]');
+    keys.forEach(function(btn){
+      btn.addEventListener('click', function(){ handleDigit(btn.getAttribute('data-digit')); });
+    });
+    document.getElementById('hintBtn').addEventListener('click', useHint);
+    document.getElementById('hintBtn').style.visibility = mode === 'recall' ? 'visible' : 'hidden';
+  }
+
+  function attachEvents(){
+    document.addEventListener('keydown', function(e){
+      if(e.metaKey || e.ctrlKey || e.altKey) return;
+      if(/^[0-9]$/.test(e.key)){ handleDigit(e.key); }
+    });
+    document.getElementById('modeLearn').addEventListener('click', function(){ setMode('learn'); });
+    document.getElementById('modeRecall').addEventListener('click', function(){ setMode('recall'); });
+    document.getElementById('restartBtn').addEventListener('click', resetRun);
+    document.getElementById('celebrateClose').addEventListener('click', function(){
+      document.getElementById('celebrate').hidden = true;
+      resetRun();
+    });
+  }
+
+  function renderAll(){
+    renderReadout();
+    renderTrail();
+    updateStats();
+  }
+
+  // ----- hot reload state (preserves an in-progress walk across a republish) -----
+  function collectState(){
+    return { mode: mode, current: current, hinted: hinted, runStartTime: runStartTime, store: store };
+  }
+  function restoreState(data){
+    if(!data) return;
+    if(data.store) store = Object.assign(store, data.store);
+    if(typeof data.mode === 'string') mode = data.mode;
+    if(typeof data.current === 'number') current = data.current;
+    if(typeof data.hinted === 'boolean') hinted = data.hinted;
+    if(typeof data.runStartTime === 'number') runStartTime = data.runStartTime;
+  }
+
+  function start(initData){
+    restoreState(initData);
+    document.getElementById('modeLearn').classList.toggle('active', mode === 'learn');
+    document.getElementById('modeLearn').setAttribute('aria-pressed', mode === 'learn');
+    document.getElementById('modeRecall').classList.toggle('active', mode === 'recall');
+    document.getElementById('modeRecall').setAttribute('aria-pressed', mode === 'recall');
+    document.getElementById('modeHint').textContent = mode === 'learn'
+      ? "Digits stay visible — walk the path while it's in view."
+      : "Digits are hidden — recall each one before you type it.";
+    buildTrail();
+    buildKeypad();
+    attachEvents();
+    renderAll();
+    requestAnimationFrame(scrollToCurrent);
+    if(mode === 'recall' && runStartTime !== null && current < TOTAL){ startTimerLoop(); }
+  }
+
+  try{ if(window.claude && window.claude.hot && window.claude.hot.snapshot){ window.claude.hot.snapshot(collectState); } }catch(e){}
+
+  if(window.claude && window.claude.hot && window.claude.hot.ready){
+    window.claude.hot.ready(start);
+  } else {
+    start((window.claude && window.claude.hot && window.claude.hot.data) || {});
+  }
+})();
+</script>
