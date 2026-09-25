@@ -69,17 +69,17 @@
   .app{ max-width: 560px; margin: 0 auto; display:flex; flex-direction:column; gap: 18px; }
 
   /* ---------- header ---------- */
-  .masthead{
-    display:flex; flex-direction:column; gap:4px;
-    border-bottom: 1px solid var(--paper-line);
-    padding-bottom: 14px;
-  }
+  .masthead h1{ font-size: clamp(28px, 6vw, 38px); font-weight: 600; color: var(--ink); }
   .eyebrow{
     font-family:'DM Sans', ui-sans-serif, system-ui, sans-serif; font-size: 11.5px; letter-spacing: 0.1em; text-transform: uppercase;
     color: var(--accent-2); font-weight:600;
   }
-  .masthead h1{ font-size: clamp(28px, 6vw, 38px); font-weight: 600; color: var(--ink); }
-  .masthead p{ margin: 2px 0 0; color: var(--ink-soft); font-size: 14.5px; max-width: 46ch; }
+  .trail-info{
+    display:flex; flex-direction:column; gap:4px;
+    border-bottom: 1px solid var(--paper-line);
+    padding-bottom: 14px;
+  }
+  .trail-info p{ margin: 2px 0 0; color: var(--ink-soft); font-size: 14.5px; max-width: 46ch; }
 
   /* ---------- trail picker ---------- */
   .picker-row{ display:flex; gap:10px; flex-wrap:wrap; }
@@ -258,9 +258,7 @@
 
 <div class="app">
   <div class="masthead">
-    <span class="eyebrow" id="eyebrow">Memory trail</span>
     <h1>Trailblazer</h1>
-    <p id="subtitle">Recall a sequence from memory, one step at a time, and watch your trail climb toward the summit.</p>
   </div>
 
   <div class="picker-row">
@@ -272,6 +270,11 @@
       <label for="trailSelect">Trail</label>
       <select id="trailSelect" aria-label="Trail"></select>
     </div>
+  </div>
+
+  <div class="trail-info">
+    <span class="eyebrow" id="eyebrow">Memory trail</span>
+    <p id="subtitle">Recall a sequence from memory, one step at a time, and watch your trail climb toward the summit.</p>
   </div>
 
   <div class="mode-row">
