@@ -1,5 +1,5 @@
 <meta charset="utf-8">
-<title>Pi Trailblazer</title>
+<title>Trailblazer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Space+Mono:wght@400;700&display=swap">
@@ -81,6 +81,18 @@
   .masthead h1{ font-size: clamp(28px, 6vw, 38px); font-weight: 600; color: var(--ink); }
   .masthead p{ margin: 2px 0 0; color: var(--ink-soft); font-size: 14.5px; max-width: 46ch; }
 
+  /* ---------- trail picker ---------- */
+  .picker-row{ display:flex; gap:10px; flex-wrap:wrap; }
+  .picker-field{ display:flex; flex-direction:column; gap:3px; flex:1; min-width: 150px; }
+  .picker-field label{
+    font-size: 10px; letter-spacing:.08em; text-transform:uppercase; color: var(--ink-soft); font-weight:700;
+  }
+  .picker-field select{
+    font-family:'DM Sans', ui-sans-serif, system-ui, sans-serif; font-size: 13.5px; font-weight:600; color: var(--ink);
+    background: var(--surface); border: 1px solid var(--paper-line); border-radius: 8px; padding: 8px 10px; cursor:pointer;
+  }
+  .picker-field select:focus-visible{ outline: 2px solid var(--focus); outline-offset:2px; }
+
   /* ---------- mode toggle ---------- */
   .mode-row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
   .mode-toggle{
@@ -127,7 +139,7 @@
     background-image: repeating-linear-gradient(0deg, transparent 0 33px, color-mix(in srgb, var(--paper-line) 45%, transparent) 33px 34px);
   }
   @media (max-width: 420px){ .trail-viewport{ height: 340px; } }
-  .trail-viewport svg{ width:100%; display:block; aspect-ratio: 320 / 3440; }
+  .trail-viewport svg{ width:100%; display:block; }
   .trail-viewport::-webkit-scrollbar{ width: 8px; }
   .trail-viewport::-webkit-scrollbar-thumb{ background: var(--paper-line); border-radius: 8px; }
 
@@ -162,6 +174,20 @@
   }
   @media (prefers-reduced-motion: reduce){ .cursor{ animation: none; opacity:.7; } }
 
+  .text-entries{
+    display:flex; flex-direction:column; gap:2px;
+    max-height: 230px; overflow-y:auto;
+    font-family:'Space Mono', monospace; font-size: 14px;
+  }
+  .text-entries::-webkit-scrollbar{ width: 8px; }
+  .text-entries::-webkit-scrollbar-thumb{ background: var(--paper-line); border-radius: 8px; }
+  .text-entries .entry{ padding: 3px 2px; border-radius: 6px; color: var(--ink); }
+  .text-entries .entry.ghost{ color: var(--ink-soft); opacity:.55; }
+  .text-entries .entry.flash-good{ animation: pop .32s ease; color: var(--accent-2); }
+  .text-entries .entry .idx{ color: var(--ink-soft); font-weight:700; margin-right:6px; }
+  @media (prefers-reduced-motion: reduce){ .text-entries .entry.flash-good{ animation:none; } }
+
+  .hint-row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
   .hint-toast{
     font-family:'Space Mono', monospace; font-size: 13px; color: var(--gold);
     background: color-mix(in srgb, var(--gold) 14%, var(--surface-2));
@@ -171,6 +197,7 @@
   .hint-toast.show{ display:flex; }
 
   .keypad{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .keypad[hidden]{ display:none; }
   .key{
     font-family:'Space Mono', monospace; font-size: 20px; font-weight:700; color: var(--ink);
     background: var(--surface-2); border: 1px solid var(--paper-line); border-radius: 9px;
@@ -181,8 +208,18 @@
   .key:focus-visible{ outline: 2px solid var(--focus); outline-offset:2px; }
   .key.good{ background: var(--accent-2); color: #fff; border-color: var(--accent-2); }
   .key.bad{ background: var(--danger); color: #fff; border-color: var(--danger); }
-  .key.util{ font-family:'Karla', sans-serif; font-size: 12.5px; color: var(--ink-soft); background: transparent; }
-  .key.util:hover{ background: var(--surface-2); }
+  .key-spacer{ visibility: hidden; pointer-events:none; cursor:default; }
+
+  .answer-row{ display:flex; gap:8px; }
+  .answer-row[hidden]{ display:none; }
+  .answer-input{
+    flex:1; min-width:0; font-family:'Space Mono', monospace; font-size: 16px; color: var(--ink);
+    background: var(--surface-2); border: 1px solid var(--paper-line); border-radius: 10px; padding: 11px 12px;
+  }
+  .answer-input:focus-visible{ outline: 2px solid var(--focus); outline-offset:2px; }
+  .answer-input.bad{ border-color: var(--danger); animation: shake .38s ease; }
+  .answer-input.good{ border-color: var(--accent-2); }
+  @media (prefers-reduced-motion: reduce){ .answer-input.bad{ animation:none; } }
 
   /* ---------- celebration ---------- */
   .celebrate{
@@ -221,9 +258,20 @@
 
 <div class="app">
   <div class="masthead">
-    <span class="eyebrow">Memory trail · first 100 decimals</span>
-    <h1>Pi Trailblazer</h1>
-    <p>Type the digits of π from memory, one at a time, and watch your trail climb toward the summit at digit 100.</p>
+    <span class="eyebrow" id="eyebrow">Memory trail</span>
+    <h1>Trailblazer</h1>
+    <p id="subtitle">Recall a sequence from memory, one step at a time, and watch your trail climb toward the summit.</p>
+  </div>
+
+  <div class="picker-row">
+    <div class="picker-field">
+      <label for="topicSelect">Topic</label>
+      <select id="topicSelect" aria-label="Topic"></select>
+    </div>
+    <div class="picker-field">
+      <label for="trailSelect">Trail</label>
+      <select id="trailSelect" aria-label="Trail"></select>
+    </div>
   </div>
 
   <div class="mode-row">
@@ -231,7 +279,7 @@
       <button id="modeLearn" class="active" aria-pressed="true">Learn</button>
       <button id="modeRecall" aria-pressed="false">Recall</button>
     </div>
-    <span class="mode-hint" id="modeHint">Digits stay visible — walk the path while it's in view.</span>
+    <span class="mode-hint" id="modeHint">Answers stay visible — walk the path while it's in view.</span>
   </div>
 
   <div class="stats">
@@ -255,7 +303,7 @@
       <span id="trailLegend">green = your record · orange = this walk</span>
     </div>
     <div class="trail-viewport" id="trailViewport">
-      <svg id="trailSvg" viewBox="0 0 320 3440" preserveAspectRatio="xMidYMin meet" aria-label="Winding trail marking your progress through 100 digits of pi"></svg>
+      <svg id="trailSvg" viewBox="0 0 320 3440" preserveAspectRatio="xMidYMin meet" aria-label="Winding trail marking your progress through the sequence"></svg>
     </div>
     <div class="restart-row">
       <button class="btn-ghost" id="restartBtn" type="button">Restart this walk</button>
@@ -267,16 +315,24 @@
       <path d="M5 21V4" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"/>
       <path d="M5 4h13l-3.2 4L18 12H5" fill="var(--gold)" stroke="var(--gold)" stroke-width="1.4" stroke-linejoin="round"/>
     </svg>
-    <h3>Summit reached — all 100 digits</h3>
+    <h3 id="celebrateHeading">Summit reached</h3>
     <p id="celebrateDetail">You made it to the top of the trail.</p>
     <button class="btn-primary" id="celebrateClose" type="button">Blaze it again</button>
   </div>
 
   <div class="console">
-    <div class="readout" id="readout" role="status" aria-live="polite">
-      <span class="int-part">3.</span><span id="typed"></span><span class="cursor" id="cursor" aria-hidden="true"></span><span id="ghost"></span>
+    <div class="readout" id="digitReadoutWrap" role="status" aria-live="polite">
+      <span class="int-part" id="digitPrefix">3.</span><span id="typed"></span><span class="cursor" id="cursor" aria-hidden="true"></span><span id="ghost"></span>
     </div>
-    <div class="hint-toast" id="hintToast"></div>
+    <div class="readout" id="textReadoutWrap" role="status" aria-live="polite" hidden>
+      <div class="text-entries" id="textEntries"></div>
+    </div>
+
+    <div class="hint-row">
+      <button class="btn-ghost" id="hintBtn" type="button">Hint</button>
+      <div class="hint-toast" id="hintToast"></div>
+    </div>
+
     <div class="keypad" id="keypad">
       <button class="key" data-digit="1" type="button">1</button>
       <button class="key" data-digit="2" type="button">2</button>
@@ -287,15 +343,20 @@
       <button class="key" data-digit="7" type="button">7</button>
       <button class="key" data-digit="8" type="button">8</button>
       <button class="key" data-digit="9" type="button">9</button>
-      <button class="key util" id="hintBtn" type="button">Hint</button>
+      <span class="key key-spacer" aria-hidden="true"></span>
       <button class="key" data-digit="0" type="button">0</button>
-      <span></span>
+      <span class="key key-spacer" aria-hidden="true"></span>
     </div>
+
+    <form class="answer-row" id="answerForm" autocomplete="off" hidden>
+      <input class="answer-input" id="answerInput" type="text" placeholder="Type the next one from memory…" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <button class="btn-primary" type="submit">Submit</button>
+    </form>
   </div>
 
   <footer>
     <p id="completionNote"></p>
-    <p>Your best distance and time are kept on this device only.</p>
+    <p>Your best distance and time for this trail are kept on this device only.</p>
   </footer>
 </div>
 
@@ -303,18 +364,245 @@
 (function(){
   "use strict";
 
+  // ----- data: topics and their trails -----
   var PI_DIGITS = "1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679";
-  var TOTAL = PI_DIGITS.length; // 100
-  var STORAGE_KEY = "pi-trailblazer-v1";
+
+  var TOPIC_ORDER = ["pi", "us_presidents", "planets", "norwegian_prime_ministers", "geological_time", "chemical_elements", "british_prime_ministers"];
+
+  var DATA = {
+    pi: {
+      title: "Pi",
+      trails: [
+        { id: "first_100", title: "First 100 decimals", sequence: PI_DIGITS.split("") }
+      ]
+    },
+    us_presidents: {
+      title: "US presidents",
+      trails: [
+        {
+          id: "first_10", title: "First 10", sequence: [
+            "George Washington", "John Adams", "Thomas Jefferson", "James Madison", "James Monroe",
+            "John Quincy Adams", "Andrew Jackson", "Martin Van Buren", "William Henry Harrison", "John Tyler"
+          ]
+        },
+        {
+          id: "since_1900", title: "Since 1900", sequence: [
+            "William McKinley", "Theodore Roosevelt", "William H. Taft", "Woodrow Wilson", "Warren Harding",
+            "Calvin Coolidge", "Herbert Hoover", "Franklin D. Roosevelt", "Harry Truman", "Dwight Eisenhower",
+            "John F. Kennedy", "Lyndon Johnson", "Richard Nixon", "Gerald Ford", "Jimmy Carter",
+            "Ronald Reagan", "George H.W. Bush", "William J. Clinton", "George W. Bush", "Barack Obama",
+            "Donald Trump", "Joe Biden", "Donald Trump"
+          ]
+        },
+        {
+          id: "complete", title: "Complete sequence", sequence: [
+            "George Washington", "John Adams", "Thomas Jefferson", "James Madison", "James Monroe",
+            "John Quincy Adams", "Andrew Jackson", "Martin Van Buren", "William Henry Harrison", "John Tyler",
+            "James Polk", "Zachary Taylor", "Millard Fillmore", "Franklin Pierce", "James Buchanan",
+            "Abraham Lincoln", "Andrew Johnson", "Ulysses S. Grant", "Rutherford B. Hayes", "James Garfield",
+            "Chester Arthur", "Grover Cleveland", "Benjamin Harrison", "Grover Cleveland", "William McKinley",
+            "Theodore Roosevelt", "William H. Taft", "Woodrow Wilson", "Warren Harding", "Calvin Coolidge",
+            "Herbert Hoover", "Franklin D. Roosevelt", "Harry Truman", "Dwight Eisenhower", "John F. Kennedy",
+            "Lyndon Johnson", "Richard Nixon", "Gerald Ford", "Jimmy Carter", "Ronald Reagan",
+            "George H.W. Bush", "William J. Clinton", "George W. Bush", "Barack Obama", "Donald Trump",
+            "Joe Biden", "Donald Trump"
+          ]
+        }
+      ]
+    },
+    planets: {
+      title: "Planets",
+      trails: [
+        {
+          id: "eight_planets", title: "Eight planets", sequence: [
+            "Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"
+          ]
+        },
+        {
+          id: "dwarf_planets", title: "Five recognised dwarf planets", sequence: [
+            "Ceres", "Pluto", "Haumea", "Makemake", "Eris"
+          ]
+        }
+      ]
+    },
+    norwegian_prime_ministers: {
+      title: "Norwegian prime ministers",
+      trails: [
+        {
+          id: "since_1945", title: "Since 1945", sequence: [
+            "Johan Nygaardsvold", "Einar Gerhardsen", "Oscar Torp", "Einar Gerhardsen", "John Lyng",
+            "Einar Gerhardsen", "Per Borten", "Trygve Bratteli", "Lars Korvald", "Trygve Bratteli",
+            "Odvar Nordli", "Gro Harlem Brundtland", "Kåre Willoch", "Gro Harlem Brundtland", "Jan P. Syse",
+            "Gro Harlem Brundtland", "Thorbjørn Jagland", "Kjell Magne Bondevik", "Jens Stoltenberg", "Kjell Magne Bondevik",
+            "Jens Stoltenberg", "Erna Solberg", "Jonas Gahr Støre"
+          ]
+        },
+        {
+          id: "since_1905", title: "Since 1905", sequence: [
+            "Francis Hagerup", "Christian Michelsen", "Jørgen Løvland", "Gunnar Knudsen", "Wollert Konow (S.B.)",
+            "Jens Bratlie", "Gunnar Knudsen", "Otto B. Halvorsen", "Otto Blehr", "Otto B. Halvorsen",
+            "Abraham Berge", "Johan Ludwig Mowinckel", "Ivar Lykke", "Christopher Hornsrud", "Johan Ludwig Mowinckel",
+            "Peder Kolstad", "Jens Hundseid", "Johan Ludwig Mowinckel", "Johan Nygaardsvold", "Einar Gerhardsen",
+            "Oscar Torp", "Einar Gerhardsen", "John Lyng", "Einar Gerhardsen", "Per Borten",
+            "Trygve Bratteli", "Lars Korvald", "Trygve Bratteli", "Odvar Nordli", "Gro Harlem Brundtland",
+            "Kåre Willoch", "Gro Harlem Brundtland", "Jan P. Syse", "Gro Harlem Brundtland", "Thorbjørn Jagland",
+            "Kjell Magne Bondevik", "Jens Stoltenberg", "Kjell Magne Bondevik", "Jens Stoltenberg", "Erna Solberg",
+            "Jonas Gahr Støre"
+          ]
+        },
+        {
+          id: "since_1814", title: "Since 1814", sequence: [
+            "Peder Anker", "Mathias Sommerhielm", "Severin Løvenskiold", "Frederik Due", "Georg Sibbern",
+            "Otto Richard Kierulf", "Frederik Stang", "Christian Selmer", "Christian Schweigaard", "Johan Sverdrup",
+            "Emil Stang", "Johannes Steen", "Emil Stang", "Francis Hagerup", "Johannes Steen",
+            "Otto Blehr", "Francis Hagerup", "Christian Michelsen", "Jørgen Løvland", "Gunnar Knudsen",
+            "Wollert Konow (S.B.)", "Jens Bratlie", "Gunnar Knudsen", "Otto B. Halvorsen", "Otto Blehr",
+            "Otto B. Halvorsen", "Abraham Berge", "Johan Ludwig Mowinckel", "Ivar Lykke", "Christopher Hornsrud",
+            "Johan Ludwig Mowinckel", "Peder Kolstad", "Jens Hundseid", "Johan Ludwig Mowinckel", "Johan Nygaardsvold",
+            "Einar Gerhardsen", "Oscar Torp", "Einar Gerhardsen", "John Lyng", "Einar Gerhardsen",
+            "Per Borten", "Trygve Bratteli", "Lars Korvald", "Trygve Bratteli", "Odvar Nordli",
+            "Gro Harlem Brundtland", "Kåre Willoch", "Gro Harlem Brundtland", "Jan P. Syse", "Gro Harlem Brundtland",
+            "Thorbjørn Jagland", "Kjell Magne Bondevik", "Jens Stoltenberg", "Kjell Magne Bondevik", "Jens Stoltenberg",
+            "Erna Solberg", "Jonas Gahr Støre"
+          ]
+        }
+      ]
+    },
+    geological_time: {
+      title: "Geological time",
+      trails: [
+        {
+          id: "eons", title: "Eons", sequence: [
+            "Hadean", "Archean", "Proterozoic", "Phanerozoic"
+          ]
+        },
+        {
+          id: "phanerozoic_eras", title: "Eras of the Phanerozoic", sequence: [
+            "Paleozoic", "Mesozoic", "Cenozoic"
+          ]
+        },
+        {
+          id: "phanerozoic_periods", title: "Periods of the Phanerozoic", sequence: [
+            "Cambrian", "Ordovician", "Silurian", "Devonian", "Carboniferous", "Permian",
+            "Triassic", "Jurassic", "Cretaceous", "Paleogene", "Neogene", "Quaternary"
+          ]
+        }
+      ]
+    },
+    chemical_elements: {
+      title: "Chemical elements",
+      trails: [
+        {
+          id: "first_10", title: "First 10 elements", sequence: [
+            "Hydrogen", "Helium", "Lithium", "Beryllium", "Boron", "Carbon", "Nitrogen", "Oxygen", "Fluorine", "Neon"
+          ]
+        },
+        {
+          id: "first_20", title: "First 20 elements", sequence: [
+            "Hydrogen", "Helium", "Lithium", "Beryllium", "Boron", "Carbon", "Nitrogen", "Oxygen", "Fluorine", "Neon",
+            "Sodium", "Magnesium", "Aluminium", "Silicon", "Phosphorus", "Sulfur", "Chlorine", "Argon", "Potassium", "Calcium"
+          ]
+        },
+        {
+          id: "first_50", title: "First 50 elements", sequence: [
+            "Hydrogen", "Helium", "Lithium", "Beryllium", "Boron", "Carbon", "Nitrogen", "Oxygen", "Fluorine", "Neon",
+            "Sodium", "Magnesium", "Aluminium", "Silicon", "Phosphorus", "Sulfur", "Chlorine", "Argon", "Potassium", "Calcium",
+            "Scandium", "Titanium", "Vanadium", "Chromium", "Manganese", "Iron", "Cobalt", "Nickel", "Copper", "Zinc",
+            "Gallium", "Germanium", "Arsenic", "Selenium", "Bromine", "Krypton", "Rubidium", "Strontium", "Yttrium", "Zirconium",
+            "Niobium", "Molybdenum", "Technetium", "Ruthenium", "Rhodium", "Palladium", "Silver", "Cadmium", "Indium", "Tin"
+          ]
+        },
+        {
+          id: "first_118", title: "All 118 elements", sequence: [
+            "Hydrogen", "Helium", "Lithium", "Beryllium", "Boron", "Carbon", "Nitrogen", "Oxygen", "Fluorine", "Neon",
+            "Sodium", "Magnesium", "Aluminium", "Silicon", "Phosphorus", "Sulfur", "Chlorine", "Argon", "Potassium", "Calcium",
+            "Scandium", "Titanium", "Vanadium", "Chromium", "Manganese", "Iron", "Cobalt", "Nickel", "Copper", "Zinc",
+            "Gallium", "Germanium", "Arsenic", "Selenium", "Bromine", "Krypton", "Rubidium", "Strontium", "Yttrium", "Zirconium",
+            "Niobium", "Molybdenum", "Technetium", "Ruthenium", "Rhodium", "Palladium", "Silver", "Cadmium", "Indium", "Tin",
+            "Antimony", "Tellurium", "Iodine", "Xenon", "Caesium", "Barium", "Lanthanum", "Cerium", "Praseodymium", "Neodymium",
+            "Promethium", "Samarium", "Europium", "Gadolinium", "Terbium", "Dysprosium", "Holmium", "Erbium", "Thulium", "Ytterbium",
+            "Lutetium", "Hafnium", "Tantalum", "Tungsten", "Rhenium", "Osmium", "Iridium", "Platinum", "Gold", "Mercury",
+            "Thallium", "Lead", "Bismuth", "Polonium", "Astatine", "Radon", "Francium", "Radium", "Actinium", "Thorium",
+            "Protactinium", "Uranium", "Neptunium", "Plutonium", "Americium", "Curium", "Berkelium", "Californium", "Einsteinium", "Fermium",
+            "Mendelevium", "Nobelium", "Lawrencium", "Rutherfordium", "Dubnium", "Seaborgium", "Bohrium", "Hassium", "Meitnerium", "Darmstadtium",
+            "Roentgenium", "Copernicium", "Nihonium", "Flerovium", "Moscovium", "Livermorium", "Tennessine", "Oganesson"
+          ]
+        }
+      ]
+    },
+    british_prime_ministers: {
+      title: "British prime ministers",
+      trails: [
+        {
+          id: "since_1945", title: "Since 1945", sequence: [
+            "Winston Churchill", "Clement Attlee", "Winston Churchill", "Anthony Eden", "Harold Macmillan",
+            "Alec Douglas-Home", "Harold Wilson", "Edward Heath", "Harold Wilson", "James Callaghan",
+            "Margaret Thatcher", "John Major", "Tony Blair", "Gordon Brown", "David Cameron",
+            "Theresa May", "Boris Johnson", "Liz Truss", "Rishi Sunak", "Keir Starmer",
+            "Andy Burnham"
+          ]
+        },
+        {
+          id: "since_1900", title: "Since 1900", sequence: [
+            "Robert Gascoyne-Cecil, 3rd Marquess of Salisbury", "Arthur James Balfour", "Henry Campbell-Bannerman", "Herbert Henry Asquith", "David Lloyd George",
+            "Andrew Bonar Law", "Stanley Baldwin", "James Ramsay MacDonald", "Stanley Baldwin", "James Ramsay MacDonald",
+            "Stanley Baldwin", "Neville Chamberlain", "Winston Churchill", "Clement Attlee", "Winston Churchill",
+            "Anthony Eden", "Harold Macmillan", "Alec Douglas-Home", "Harold Wilson", "Edward Heath",
+            "Harold Wilson", "James Callaghan", "Margaret Thatcher", "John Major", "Tony Blair",
+            "Gordon Brown", "David Cameron", "Theresa May", "Boris Johnson", "Liz Truss",
+            "Rishi Sunak", "Keir Starmer", "Andy Burnham"
+          ]
+        },
+        {
+          id: "since_1721", title: "All from Walpole", sequence: [
+            "Robert Walpole", "Spencer Compton, 1st Earl of Wilmington", "Henry Pelham", "Thomas Pelham-Holles 1st Duke of Newcastle", "William Cavendish Duke of Devonshire",
+            "Thomas Pelham-Holles 1st Duke of Newcastle", "John Stuart, 3rd Earl of Bute", "George Grenville", "Charles Watson-Wentworth, 2nd Marquess of Rockingham", "William Pitt 'The Elder', 1st Earl of Chatham",
+            "Augustus Henry Fitzroy, 3rd Duke of Grafton", "Lord Frederick North", "Charles Watson-Wentworth, 2nd Marquess of Rockingham", "William Petty, 2nd Earl of Shelburne", "William Cavendish-Bentinck Duke of Portland",
+            "William Pitt 'The Younger'", "Henry Addington 1st Viscount Sidmouth", "William Pitt 'The Younger'", "William Wyndham Grenville, 1st Baron Grenville", "William Cavendish-Bentinck Duke of Portland",
+            "Spencer Perceval", "Robert Banks Jenkinson Earl of Liverpool", "George Canning", "Frederick Robinson, Viscount Goderich", "Arthur Wellesley, 1st Duke of Wellington",
+            "Charles Grey, 2nd Earl Grey", "William Lamb, 2nd Viscount Melbourne", "Arthur Wellesley, 1st Duke of Wellington", "Robert Peel 2nd Baronet", "William Lamb, 2nd Viscount Melbourne",
+            "Robert Peel 2nd Baronet", "Lord John Russell, 1st Earl Russell", "Edward Smith Stanley, 14th Earl of Derby", "George Hamilton Gordon Earl of Aberdeen", "Henry John Temple, 3rd Viscount Palmerston",
+            "Edward Smith Stanley, 14th Earl of Derby", "Henry John Temple, 3rd Viscount Palmerston", "Lord John Russell, 1st Earl Russell", "Edward Smith Stanley, 14th Earl of Derby", "Benjamin Disraeli, the Earl of Beaconsfield",
+            "William Ewart Gladstone", "Benjamin Disraeli, the Earl of Beaconsfield", "William Ewart Gladstone", "Robert Gascoyne-Cecil, 3rd Marquess of Salisbury", "William Ewart Gladstone",
+            "Robert Gascoyne-Cecil, 3rd Marquess of Salisbury", "William Ewart Gladstone", "Archibald Primrose, 5th Earl of Rosebery", "Robert Gascoyne-Cecil, 3rd Marquess of Salisbury", "Arthur James Balfour",
+            "Henry Campbell-Bannerman", "Herbert Henry Asquith", "David Lloyd George", "Andrew Bonar Law", "Stanley Baldwin",
+            "James Ramsay MacDonald", "Stanley Baldwin", "James Ramsay MacDonald", "Stanley Baldwin", "Neville Chamberlain",
+            "Winston Churchill", "Clement Attlee", "Winston Churchill", "Anthony Eden", "Harold Macmillan",
+            "Alec Douglas-Home", "Harold Wilson", "Edward Heath", "Harold Wilson", "James Callaghan",
+            "Margaret Thatcher", "John Major", "Tony Blair", "Gordon Brown", "David Cameron",
+            "Theresa May", "Boris Johnson", "Liz Truss", "Rishi Sunak", "Keir Starmer",
+            "Andy Burnham"
+          ]
+        }
+      ]
+    }
+  };
+
+  var STORAGE_PREFIX = "trailblazer:";
+  var LEGACY_PI_KEY = "pi-trailblazer-v1";
+  var LAST_SELECTION_KEY = "trailblazer:last-selection";
   var W = 320, ROW_H = 34, TOP_PAD = 22, BOTTOM_PAD = 70;
-  var H = TOP_PAD + (TOTAL - 1) * ROW_H + BOTTOM_PAD;
 
   var reduceMotion = false;
   try{ reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){}
 
-  function loadStore(){
+  function normalize(s){
+    return String(s)
+      .toLowerCase()
+      .replace(/ø/g, "o")
+      .replace(/æ/g, "ae")
+      .normalize("NFD").replace(/[̀-ͯ]/g, "")
+      .replace(/[^a-z0-9]+/g, "");
+  }
+
+  function storeKey(topicId, trailId){ return STORAGE_PREFIX + topicId + ":" + trailId; }
+
+  function loadStore(topicId, trailId){
     try{
-      var raw = localStorage.getItem(STORAGE_KEY);
+      var raw = localStorage.getItem(storeKey(topicId, trailId));
+      if(!raw && topicId === "pi" && trailId === "first_100"){
+        raw = localStorage.getItem(LEGACY_PI_KEY);
+      }
       if(!raw) return { best: 0, bestTimeMs: null, completions: 0 };
       var parsed = JSON.parse(raw);
       return {
@@ -325,10 +613,30 @@
     }catch(e){ return { best: 0, bestTimeMs: null, completions: 0 }; }
   }
   function saveStore(){
-    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); }catch(e){}
+    try{ localStorage.setItem(storeKey(currentTopicId, currentTrailId), JSON.stringify(store)); }catch(e){}
+  }
+  function saveLastSelection(){
+    try{ localStorage.setItem(LAST_SELECTION_KEY, JSON.stringify({ topicId: currentTopicId, trailId: currentTrailId })); }catch(e){}
+  }
+  function loadLastSelection(){
+    try{
+      var raw = localStorage.getItem(LAST_SELECTION_KEY);
+      if(!raw) return null;
+      var parsed = JSON.parse(raw);
+      if(DATA[parsed.topicId] && DATA[parsed.topicId].trails.some(function(t){ return t.id === parsed.trailId; })){
+        return parsed;
+      }
+    }catch(e){}
+    return null;
   }
 
-  var store = loadStore();
+  var currentTopicId = "pi";
+  var currentTrailId = "first_100";
+  var SEQUENCE = DATA.pi.trails[0].sequence;
+  var TOTAL = SEQUENCE.length;
+  var inputKind = "digit";
+
+  var store = { best: 0, bestTimeMs: null, completions: 0 };
   var mode = 'learn';
   var current = 0;
   var hinted = false;
@@ -337,10 +645,27 @@
 
   // ----- geometry -----
   var points = [];
-  for(var i=0;i<TOTAL;i++){
-    var x = W/2 + 92 * Math.sin(i * 0.55);
-    var y = TOP_PAD + i * ROW_H;
-    points.push({ x: x, y: y, checkpoint: (i+1) % 10 === 0 });
+  var H = 0;
+
+  function checkpointInterval(){
+    if(TOTAL <= 6) return 0;
+    if(TOTAL <= 20) return 5;
+    if(TOTAL <= 60) return 10;
+    return 20;
+  }
+  function isCheckpoint(idx){
+    if(idx === TOTAL - 1) return true;
+    var interval = checkpointInterval();
+    return interval > 0 && (idx + 1) % interval === 0;
+  }
+  function buildGeometry(){
+    points = [];
+    for(var i=0;i<TOTAL;i++){
+      var x = W/2 + 92 * Math.sin(i * 0.55);
+      var y = TOP_PAD + i * ROW_H;
+      points.push({ x: x, y: y, checkpoint: isCheckpoint(i) });
+    }
+    H = TOP_PAD + Math.max(TOTAL - 1, 0) * ROW_H + BOTTOM_PAD;
   }
 
   function pathD(list){
@@ -365,6 +690,7 @@
   function buildTrail(){
     svg.innerHTML = '';
     svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    svg.style.aspectRatio = W + ' / ' + H;
 
     basePath = svgEl('path', { d: pathD(points), fill:'none', stroke:'var(--paper-line)', 'stroke-width':'9', 'stroke-linecap':'round', 'stroke-dasharray':'1 11', opacity:'0.9' });
     svg.appendChild(basePath);
@@ -380,8 +706,7 @@
 
     points.forEach(function(p, idx){
       if(p.checkpoint){
-        var mile = (idx + 1) / 10;
-        var label = (idx === TOTAL - 1) ? 'SUMMIT' : ('MILE ' + mile);
+        var label = (idx === TOTAL - 1) ? 'SUMMIT' : ('STOP ' + (idx + 1));
         var onRight = p.x < W/2;
         var lx = onRight ? p.x + 16 : p.x - 16;
         var text = svgEl('text', {
@@ -471,13 +796,17 @@
 
   // ----- readout -----
   function renderReadout(){
+    if(inputKind === 'digit') renderDigitReadout(); else renderTextReadout();
+  }
+
+  function renderDigitReadout(){
     var typedEl = document.getElementById('typed');
     var ghostEl = document.getElementById('ghost');
     typedEl.innerHTML = '';
     for(var i=0;i<current;i++){
       var s = document.createElement('span');
       s.className = 'd' + (((i+1) % 2 === 0) ? ' grp' : '');
-      s.textContent = PI_DIGITS[i];
+      s.textContent = SEQUENCE[i];
       typedEl.appendChild(s);
     }
     ghostEl.innerHTML = '';
@@ -485,26 +814,66 @@
       for(var j=current;j<TOTAL;j++){
         var g = document.createElement('span');
         g.className = 'd ghost-d' + (((j+1) % 2 === 0) ? ' grp' : '');
-        g.textContent = PI_DIGITS[j];
+        g.textContent = SEQUENCE[j];
         ghostEl.appendChild(g);
       }
     }
   }
 
+  function renderTextReadout(){
+    var wrap = document.getElementById('textEntries');
+    wrap.innerHTML = '';
+    function addRow(idx, text, cls){
+      var row = document.createElement('div');
+      row.className = 'entry ' + cls;
+      var idxSpan = document.createElement('span');
+      idxSpan.className = 'idx';
+      idxSpan.textContent = (idx + 1) + '.';
+      row.appendChild(idxSpan);
+      row.appendChild(document.createTextNode(text));
+      wrap.appendChild(row);
+    }
+    for(var i=0;i<current;i++) addRow(i, SEQUENCE[i], 'typed');
+    if(mode === 'learn'){
+      for(var j=current;j<TOTAL;j++) addRow(j, SEQUENCE[j], 'ghost');
+    } else if(current < TOTAL){
+      addRow(current, '?', 'ghost');
+    }
+    wrap.scrollTop = wrap.scrollHeight;
+  }
+
   function flashLastGood(){
-    var typedEl = document.getElementById('typed');
-    var last = typedEl.lastElementChild;
-    if(last){ last.classList.add('flash-good'); setTimeout(function(){ last.classList.remove('flash-good'); }, 340); }
+    if(inputKind === 'digit'){
+      var typedEl = document.getElementById('typed');
+      var last = typedEl.lastElementChild;
+      if(last){ last.classList.add('flash-good'); setTimeout(function(){ last.classList.remove('flash-good'); }, 340); }
+    } else {
+      var wrap = document.getElementById('textEntries');
+      var rows = wrap.querySelectorAll('.entry.typed');
+      var lastRow = rows[rows.length - 1];
+      if(lastRow){ lastRow.classList.add('flash-good'); setTimeout(function(){ lastRow.classList.remove('flash-good'); }, 340); }
+    }
   }
   function flashWrong(){
-    var readout = document.getElementById('readout');
-    if(!reduceMotion){ readout.classList.add('shake'); setTimeout(function(){ readout.classList.remove('shake'); }, 400); }
+    if(inputKind === 'digit'){
+      var readout = document.getElementById('digitReadoutWrap');
+      if(!reduceMotion){ readout.classList.add('shake'); setTimeout(function(){ readout.classList.remove('shake'); }, 400); }
+    } else {
+      var input = document.getElementById('answerInput');
+      input.classList.add('bad');
+      setTimeout(function(){ input.classList.remove('bad'); }, 400);
+    }
   }
   function flashKey(digit, good){
     var btn = document.querySelector('.key[data-digit="' + digit + '"]');
     if(!btn) return;
     btn.classList.add(good ? 'good' : 'bad');
     setTimeout(function(){ btn.classList.remove(good ? 'good' : 'bad'); }, 260);
+  }
+  function flashInputGood(){
+    var input = document.getElementById('answerInput');
+    input.classList.add('good');
+    setTimeout(function(){ input.classList.remove('good'); }, 260);
   }
 
   // ----- stats & timer -----
@@ -562,11 +931,13 @@
 
   function celebrate(elapsedMs, isNewBestTime){
     var panel = document.getElementById('celebrate');
+    var heading = document.getElementById('celebrateHeading');
     var detail = document.getElementById('celebrateDetail');
+    heading.textContent = 'Summit reached — ' + TOTAL + (inputKind === 'digit' ? ' digits' : ' steps');
     if(mode === 'recall'){
       detail.textContent = "Time: " + formatTime(elapsedMs) + (isNewBestTime ? " — a new best." : (hinted ? " (hint used, not counted toward best time)." : "."));
     } else {
-      detail.textContent = "You've walked all 100 digits in Learn mode.";
+      detail.textContent = "You've walked the full trail in Learn mode.";
     }
     panel.hidden = false;
     spawnConfetti();
@@ -584,13 +955,22 @@
     renderTrail();
     updateStats();
     scrollToCurrent();
+    if(inputKind === 'text'){
+      var input = document.getElementById('answerInput');
+      input.value = '';
+      input.focus();
+    }
   }
 
-  function handleDigit(digit){
-    var expected = PI_DIGITS[current];
-    if(digit === expected){
+  function handleAnswer(raw){
+    var expected = SEQUENCE[current];
+    var match = inputKind === 'digit'
+      ? (raw === expected)
+      : (raw.trim().length > 0 && normalize(raw) === normalize(expected));
+
+    if(match){
       current++;
-      flashKey(digit, true);
+      if(inputKind === 'digit') flashKey(raw, true); else flashInputGood();
       if(mode === 'recall' && current === 1){
         runStartTime = performance.now();
         startTimerLoop();
@@ -604,6 +984,11 @@
       renderTrail();
       updateStats();
       scrollToCurrent();
+      if(inputKind === 'text'){
+        var input = document.getElementById('answerInput');
+        input.value = '';
+        input.focus();
+      }
 
       if(current === TOTAL){
         var elapsed = runStartTime !== null ? (performance.now() - runStartTime) : null;
@@ -621,13 +1006,18 @@
         celebrate(elapsed, isNewBest);
       }
     } else {
-      flashKey(digit, false);
+      if(inputKind === 'digit') flashKey(raw, false);
       flashWrong();
       if(mode === 'recall'){
         showHint("It was " + expected + " — walk restarts.", 900);
         setTimeout(resetRun, 700);
+      } else if(inputKind === 'text'){
+        setTimeout(function(){
+          var input = document.getElementById('answerInput');
+          input.value = '';
+          input.focus();
+        }, 380);
       }
-      // Learn mode: mistakes don't reset the walk, just try again.
     }
   }
 
@@ -648,37 +1038,114 @@
   function useHint(){
     if(current >= TOTAL) return;
     hinted = true;
-    showHint("Next digit: " + PI_DIGITS[current], 1500);
+    var label = inputKind === 'digit' ? ("Next digit: " + SEQUENCE[current]) : ("Next: " + SEQUENCE[current]);
+    showHint(label, 1500);
   }
 
   // ----- mode switching -----
-  function setMode(next){
-    if(mode === next) return;
-    mode = next;
+  function updateModeButtons(){
     document.getElementById('modeLearn').classList.toggle('active', mode === 'learn');
     document.getElementById('modeLearn').setAttribute('aria-pressed', mode === 'learn');
     document.getElementById('modeRecall').classList.toggle('active', mode === 'recall');
     document.getElementById('modeRecall').setAttribute('aria-pressed', mode === 'recall');
     document.getElementById('modeHint').textContent = mode === 'learn'
-      ? "Digits stay visible — walk the path while it's in view."
-      : "Digits are hidden — recall each one before you type it.";
+      ? "Answers stay visible — walk the path while it's in view."
+      : "Answers are hidden — recall each one before you type it.";
     document.getElementById('hintBtn').style.visibility = mode === 'recall' ? 'visible' : 'hidden';
+  }
+  function setMode(next){
+    if(mode === next) return;
+    mode = next;
+    updateModeButtons();
     resetRun();
+  }
+
+  // ----- topic / trail switching -----
+  function subtitleFor(topicId, topic, trail){
+    if(topicId === 'pi'){
+      return "Type the digits of π from memory, one at a time, and watch your trail climb toward the summit at digit " + trail.sequence.length + ".";
+    }
+    return "Recall " + topic.title + " (" + trail.title + ") from memory, one at a time, and watch your trail climb toward the summit.";
+  }
+
+  function toggleInputWidgets(){
+    document.getElementById('digitReadoutWrap').hidden = inputKind !== 'digit';
+    document.getElementById('textReadoutWrap').hidden = inputKind === 'digit';
+    document.getElementById('keypad').hidden = inputKind !== 'digit';
+    document.getElementById('answerForm').hidden = inputKind !== 'text';
+  }
+
+  function populateTopicSelect(){
+    var sel = document.getElementById('topicSelect');
+    sel.innerHTML = '';
+    TOPIC_ORDER.forEach(function(topicId){
+      var opt = document.createElement('option');
+      opt.value = topicId;
+      opt.textContent = DATA[topicId].title;
+      sel.appendChild(opt);
+    });
+  }
+  function populateTrailSelect(topicId){
+    var sel = document.getElementById('trailSelect');
+    sel.innerHTML = '';
+    DATA[topicId].trails.forEach(function(trail){
+      var opt = document.createElement('option');
+      opt.value = trail.id;
+      opt.textContent = trail.title + ' (' + trail.sequence.length + ')';
+      sel.appendChild(opt);
+    });
+  }
+
+  function loadTrail(topicId, trailId){
+    var topic = DATA[topicId];
+    var trail = topic.trails.filter(function(t){ return t.id === trailId; })[0] || topic.trails[0];
+
+    currentTopicId = topicId;
+    currentTrailId = trail.id;
+    SEQUENCE = trail.sequence;
+    TOTAL = SEQUENCE.length;
+    inputKind = topicId === 'pi' ? 'digit' : 'text';
+    store = loadStore(topicId, trail.id);
+    mode = 'learn';
+    current = 0;
+    hinted = false;
+    runStartTime = null;
+    stopTimerLoop();
+
+    document.getElementById('eyebrow').textContent = topic.title + ' · ' + trail.title;
+    document.getElementById('subtitle').textContent = subtitleFor(topicId, topic, trail);
+    document.getElementById('digitPrefix').style.display = topicId === 'pi' ? '' : 'none';
+    document.title = 'Trailblazer · ' + trail.title;
+
+    updateModeButtons();
+    toggleInputWidgets();
+    buildGeometry();
+    buildTrail();
+    renderReadout();
+    renderTrail();
+    updateStats();
+    document.getElementById('celebrate').hidden = true;
+    hideHint();
+    if(inputKind === 'text'){
+      var input = document.getElementById('answerInput');
+      input.value = '';
+    }
+    saveLastSelection();
+    requestAnimationFrame(scrollToCurrent);
   }
 
   function buildKeypad(){
     var keys = document.querySelectorAll('.key[data-digit]');
     keys.forEach(function(btn){
-      btn.addEventListener('click', function(){ handleDigit(btn.getAttribute('data-digit')); });
+      btn.addEventListener('click', function(){ handleAnswer(btn.getAttribute('data-digit')); });
     });
     document.getElementById('hintBtn').addEventListener('click', useHint);
-    document.getElementById('hintBtn').style.visibility = mode === 'recall' ? 'visible' : 'hidden';
   }
 
   function attachEvents(){
     document.addEventListener('keydown', function(e){
       if(e.metaKey || e.ctrlKey || e.altKey) return;
-      if(/^[0-9]$/.test(e.key)){ handleDigit(e.key); }
+      if(inputKind === 'digit' && /^[0-9]$/.test(e.key)){ handleAnswer(e.key); }
     });
     document.getElementById('modeLearn').addEventListener('click', function(){ setMode('learn'); });
     document.getElementById('modeRecall').addEventListener('click', function(){ setMode('recall'); });
@@ -686,6 +1153,23 @@
     document.getElementById('celebrateClose').addEventListener('click', function(){
       document.getElementById('celebrate').hidden = true;
       resetRun();
+    });
+    document.getElementById('topicSelect').addEventListener('change', function(e){
+      var topicId = e.target.value;
+      populateTrailSelect(topicId);
+      var firstTrailId = DATA[topicId].trails[0].id;
+      document.getElementById('trailSelect').value = firstTrailId;
+      loadTrail(topicId, firstTrailId);
+    });
+    document.getElementById('trailSelect').addEventListener('change', function(e){
+      loadTrail(currentTopicId, e.target.value);
+    });
+    document.getElementById('answerForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      var input = document.getElementById('answerInput');
+      var val = input.value;
+      if(!val.trim()) return;
+      handleAnswer(val);
     });
   }
 
@@ -697,29 +1181,32 @@
 
   // ----- hot reload state (preserves an in-progress walk across a republish) -----
   function collectState(){
-    return { mode: mode, current: current, hinted: hinted, runStartTime: runStartTime, store: store };
-  }
-  function restoreState(data){
-    if(!data) return;
-    if(data.store) store = Object.assign(store, data.store);
-    if(typeof data.mode === 'string') mode = data.mode;
-    if(typeof data.current === 'number') current = data.current;
-    if(typeof data.hinted === 'boolean') hinted = data.hinted;
-    if(typeof data.runStartTime === 'number') runStartTime = data.runStartTime;
+    return { topicId: currentTopicId, trailId: currentTrailId, mode: mode, current: current, hinted: hinted, runStartTime: runStartTime };
   }
 
   function start(initData){
-    restoreState(initData);
-    document.getElementById('modeLearn').classList.toggle('active', mode === 'learn');
-    document.getElementById('modeLearn').setAttribute('aria-pressed', mode === 'learn');
-    document.getElementById('modeRecall').classList.toggle('active', mode === 'recall');
-    document.getElementById('modeRecall').setAttribute('aria-pressed', mode === 'recall');
-    document.getElementById('modeHint').textContent = mode === 'learn'
-      ? "Digits stay visible — walk the path while it's in view."
-      : "Digits are hidden — recall each one before you type it.";
-    buildTrail();
+    populateTopicSelect();
+
+    var restored = (initData && typeof initData.topicId === 'string' && DATA[initData.topicId]) ? initData : null;
+    var selection = restored || loadLastSelection() || { topicId: 'pi', trailId: 'first_100' };
+    if(restored && typeof restored.mode === 'string') mode = restored.mode;
+
+    document.getElementById('topicSelect').value = selection.topicId;
+    populateTrailSelect(selection.topicId);
+    document.getElementById('trailSelect').value = selection.trailId;
+
     buildKeypad();
     attachEvents();
+
+    loadTrail(selection.topicId, selection.trailId);
+
+    if(restored){
+      if(typeof restored.current === 'number') current = Math.min(restored.current, TOTAL);
+      if(typeof restored.hinted === 'boolean') hinted = restored.hinted;
+      if(typeof restored.runStartTime === 'number') runStartTime = restored.runStartTime;
+      updateModeButtons();
+    }
+
     renderAll();
     requestAnimationFrame(scrollToCurrent);
     if(mode === 'recall' && runStartTime !== null && current < TOTAL){ startTimerLoop(); }
